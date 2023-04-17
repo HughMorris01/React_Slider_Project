@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { shortList, list, longList } from './data';
 import { FaQuoteRight } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
@@ -7,21 +7,28 @@ const Carousel = () => {
   const [people, setPeople] = useState(list);
   const [activePerson, setActivePerson] = useState(1);
 
-  const prevPerson = (index) => {
-    if (activePerson > 0) {
-      setActivePerson(activePerson - 1);
-    } else {
-      setActivePerson(people.length - 1);
-    }
+  const prevPerson = () => {
+    setActivePerson((oldPerson) => {
+      const newPerson = (oldPerson - 1 + people.length) % people.length;
+      return newPerson;
+    });
   };
 
-  const nextPerson = (index) => {
-    if (activePerson < people.length - 1) {
-      setActivePerson(activePerson + 1);
-    } else {
-      setActivePerson(0);
-    }
+  const nextPerson = () => {
+    setActivePerson((oldPerson) => {
+      const newPerson = (oldPerson + 1) % people.length;
+      return newPerson;
+    });
   };
+
+  useEffect(() => {
+    let intervalId = setInterval(() => {
+      nextPerson();
+    }, 3000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [activePerson]);
 
   return (
     <section className="slider-container">
@@ -32,6 +39,8 @@ const Carousel = () => {
             className="slide"
             style={{
               transform: `translateX(${100 * (index - activePerson)}%)`,
+              opacity: activePerson === index ? 1 : 0,
+              visibility: activePerson === index ? 'visible' : 'hidden',
             }}
             key={id}
           >
@@ -46,7 +55,7 @@ const Carousel = () => {
       <button
         type="button"
         onClick={() => {
-          prevPerson(activePerson);
+          prevPerson();
         }}
         className="prev"
       >
@@ -55,7 +64,7 @@ const Carousel = () => {
       <button
         type="button"
         onClick={() => {
-          nextPerson(activePerson);
+          nextPerson();
         }}
         className="next"
       >
